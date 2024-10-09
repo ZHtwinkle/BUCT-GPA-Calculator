@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPA计算器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+            color: #4a69bd;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            font-size: 2.5em;
+        }
+        #courses {
+            margin-bottom: 20px;
+        }
+        .course {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .course input, .course select {
+            margin-right: 10px;
+            margin-bottom: 5px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .course input:focus, .course select:focus {
+            outline: none;
+            border-color: #4a69bd;
+            box-shadow: 0 0 0 2px rgba(74, 105, 189, 0.3);
+        }
+        button {
+            padding: 8px 15px;
+            font-size: 0.9em;
+            color: white;
+            background-color: #4a69bd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            background-color: #3c55a5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .remove-course {
+            background-color: #e74c3c;
+            margin-left: auto;
+        }
+        .remove-course:hover {
+            background-color: #c0392b;
+        }
+        #result {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4a69bd;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4a69bd;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 百❀GPA计算器 🚀</h1>
+    <div id="courses"></div>
+    <button onclick="addCourse()">➕ 添加课程</button>
+    <button onclick="calculateGPA()">🧮 计算GPA</button>
+    <p id="result"></p>
+
+    <table>
+        <tr>
+            <th>百分制</th>
+            <th>字母等级</th>
+            <th>绩点</th>
+        </tr>
+        <tr><td>95～100</td><td>A+</td><td>4.33</td></tr>
+        <tr><td>90～94</td><td>A</td><td>4.00</td></tr>
+        <tr><td>85～89</td><td>A-</td><td>3.67</td></tr>
+        <tr><td>82～84</td><td>B+</td><td>3.33</td></tr>
+        <tr><td>78～81</td><td>B</td><td>3.00</td></tr>
+        <tr><td>75～77</td><td>B-</td><td>2.67</td></tr>
+        <tr><td>72～74</td><td>C+</td><td>2.33</td></tr>
+        <tr><td>68～71</td><td>C</td><td>2.00</td></tr>
+        <tr><td>64～67</td><td>C-</td><td>1.67</td></tr>
+        <tr><td>61～63</td><td>D+</td><td>1.33</td></tr>
+        <tr><td>60</td><td>D</td><td>1.00</td></tr>
+        <tr><td><60</td><td>F</td><td>0.00</td></tr>
+    </table>
+
+    <script>
+        function addCourse() {
+            const coursesDiv = document.getElementById('courses');
+            const newCourse = document.createElement('div');
+            newCourse.className = 'course';
+            newCourse.innerHTML = `
+                <input type="text" placeholder="课程名称" class="course-name">
+                <input type="number" placeholder="学分" class="course-credit" min="0" step="0.5">
+                <input type="number" placeholder="分数" class="course-grade" min="0" max="100" oninput="updateLetterGrade(this)">
+                <select class="course-letter-grade" onchange="updateScore(this)">
+                    <option value="">字母等级</option>
+                    <option value="A+">A+</option>
+                    <option value="A">A</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B">B</option>
+                    <option value="B-">B-</option>
+                    <option value="C+">C+</></option>
+                    <option value="C">C</option>
+                    <option value="C-">C-</option>
+                    <option value="D+">D+</option>
+                    <option value="D">D</option>
+                    <option value="F">F</option>
+                </select>
+                <button class="remove-course" onclick="removeCourse(this)">❌ 删除</button>
+            `;
+            coursesDiv.appendChild(newCourse);
+            newCourse.style.animation = 'none';
+            newCourse.offsetHeight; // trigger reflow
+            newCourse.style.animation = null;
+        }
+
+        function removeCourse(button) {
+            button.parentElement.remove();
+        }
+
+        function updateScore(selectElement) {
+            const courseDiv = selectElement.parentElement;
+            const gradeInput = courseDiv.querySelector('.course-grade');
+            const letterGrade = selectElement.value;
+            const maxScore = getMaxScoreFromLetter(letterGrade);
+            gradeInput.value = maxScore !== undefined ? maxScore : '';
+        }
+
+        function updateLetterGrade(gradeInput) {
+            const courseDiv = gradeInput.parentElement;
+            const selectElement = courseDiv.querySelector('.course-letter-grade');
+            const score = parseFloat(gradeInput.value);
+
+            if (!isNaN(score)) {
+                const letterGrade = getLetterGradeFromScore(score);
+                selectElement.value = letterGrade;
+            }
+        }
+
+        function calculateGPA() {
+            const courses = document.getElementsByClassName('course');
+            let totalCredits = 0;
+            let totalGradePoints = 0;
+            let totalWeightedScore = 0;
+
+            for (let course of courses) {
+                const credit = parseFloat(course.querySelector('.course-credit').value);
+                let grade = parseFloat(course.querySelector('.course-grade').value);
+                const letterGrade = course.querySelector('.course-letter-grade').value;
+
+                if (isNaN(credit)) continue;
+
+                let gradePoint;
+                if (!isNaN(grade)) {
+                    gradePoint = convertToGradePoint(grade);
+                } else if (letterGrade) {
+                    gradePoint = getGradePointFromLetter(letterGrade);
+                    grade = getMaxScoreFromLetter(letterGrade);
+                } else {
+                    continue;
+                }
+
+                totalCredits += credit;
+                totalGradePoints += credit * gradePoint;
+                totalWeightedScore += credit * grade;
+            }
+
+            const gpa = totalCredits > 0 ? totalGradePoints / totalCredits : 0;
+            const weightedAverageScore = totalCredits > 0 ? totalWeightedScore / totalCredits : 0;
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `🎉 你的GPA是: ${gpa.toFixed(2)}<br>加权平均分是: ${weightedAverageScore.toFixed(2)} 🎉`;
+            resultElement.style.transform = 'scale(1.1)';
+            setTimeout(() => { resultElement.style.transform = 'scale(1)'; }, 300);
+        }
+
+        function convertToGradePoint(score) {
+            if (score >= 95) return 4.33;
+            if (score >= 90) return 4.00;
+            if (score >= 85) return 3.67;
+            if (score >= 82) return 3.33;
+            if (score >= 78) return 3.00;
+            if (score >= 75) return 2.67;
+            if (score >= 72) return 2.33;
+            if (score >= 68) return 2.00;
+            if (score >= 64) return 1.67;
+            if (score >= 61) return 1.33;
+            if (score >= 60) return 1.00;
+            return 0.00;
+        }
+
+        function getLetterGradeFromScore(score) {
+            if (score >= 95) return 'A+';
+            if (score >= 90) return 'A';
+            if (score >= 85) return 'A-';
+            if (score >= 82) return 'B+';
+            if (score >= 78) return 'B';
+            if (score >= 75) return 'B-';
+            if (score >= 72) return 'C+';
+            if (score >= 68) return 'C';
+            if (score >= 64) return 'C-';
+            if (score >= 61) return 'D+';
+            if (score >= 60) return 'D';
+            return 'F';
+        }
+
+        function getGradePointFromLetter(letter) {
+            const gradePoints = {
+                'A+': 4.33, 'A': 4.00, 'A-': 3.67,
+                'B+': 3.33, 'B': 3.00, 'B-': 2.67,
+                'C+': 2.33, 'C': 2.00, 'C-': 1.67,
+                'D+': 1.33, 'D': 1.00, 'F': 0.00
+            };
+            return gradePoints[letter] || 0;
+        }
+
+        function getMaxScoreFromLetter(letter) {
+            const maxScores = {
+                'A+': 100, 'A': 94, 'A-': 89,
+                'B+': 84, 'B': 81, 'B-': 77,
+                'C+': 74, 'C': 71, 'C-': 67,
+                'D+': 63, 'D': 60, 'F': 0
+            };
+            return maxScores[letter] || 0;
+        }
+
+        // 初始添加一个课程
+        addCourse();
+    </script>
+</body>
+</html>
